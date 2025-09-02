@@ -31,7 +31,6 @@ iir:
 @ 	PUSH {R14}
 
 	BL SUBROUTINE
-@test github sync
 @ 	POP {R14}
 
 	BX LR
