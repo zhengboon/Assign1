@@ -28,13 +28,30 @@
 @ write your program from here:
 
 iir:
-@ 	PUSH {R14}
+
+
+
+ 	PUSH {R14}
 
 	BL SUBROUTINE
-@ 	POP {R14}
+ 	POP {R14}
 
 	BX LR
 
+
+
+
+
 SUBROUTINE:
+PUSH {R4-R11, LR}
+MOV R4,R0
+MOV R5,R1
+MOV R6,R2
+MOV R7,R3
+
+
+
+
+POP {R4-R11, LR}
 
 	BX LR

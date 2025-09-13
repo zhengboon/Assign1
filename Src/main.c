@@ -57,7 +57,7 @@ int main(void)
 	for (i=0; i<X_SIZE; i++)//max size of a and b is defined above, assume the constants are the same for assembly
 
 	{
-		printf( "asm: i = %d, y_n = %d, \n", i, iir(N, b, a, x[i]) ) ;
+		//printf( "asm: i = %d, y_n = %d, \n", i, iir(N, b, a, x[i]) ) ;
 		printf( "C  : i = %d, y_n = %d, \n", i, iir_c(N, b, a, x[i]) ) ;
 	}
 	while (1); //halt
@@ -74,7 +74,7 @@ int iir_c(int N, int* b, int* a, int x_n)
 
 	y_n = x_n*b[0]/a[0];
 
-	for (j=0; j<=N; j++)
+	for (j=0; j<N; j++)
 	{
 		y_n+=(b[j+1]*x_store[j]-a[j+1]*y_store[j])/a[0];//pain
 	}
