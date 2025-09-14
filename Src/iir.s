@@ -59,17 +59,46 @@ SDIV R0, R0,R4
 
 
 loop_add:
-ADD R2,#1
-CMP R2,R8
-
-
-
-BLT loop_add
 
 @	for (j=0; j<N; j++)
 @	{
 @		y_n+=(b[j+1]*x_store[j]-a[j+1]*y_store[j])/a[0];
 @	}
+LDR R6,[R1,R2]
+ADD R2,R2,#1
+
+LDR R5,[R9,R2,LSL#2]
+
+
+LDR R8,[R10]
+SDIV R4,R4,R8
+ADD R0,R4,R4
+
+
+
+
+ADD R2,#1
+CMP R2,R8
+
+BLT loop_add
+
+MOV R2,R8@	for (j=N-1; j>0; j--)
+SUB R2,R2,#1
+
+
+loop_minus:
+SUB R2,R2,#1
+CMP R2,#0
+
+
+
+
+
+
+
+BGT loop_minus
+
+
 @
 @	for (j=N-1; j>0; j--)
 @	{
