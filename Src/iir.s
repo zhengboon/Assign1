@@ -69,36 +69,43 @@ SDIV R0, R0,R8
 
 loop_add:
 ADD   R9, R6, R7        @ idx = (new + j) % N;
-SDIV  R10, R9, R12      @ R10 = (new + j) / N
-MLS   R9, R10, R12, R9  @ R9 = R9 - (R10 * R12)  -> remainder
+SDIV  R10, R9, R12      @(new + j) / N
+MLS   R9, R10, R12, R9  @R9 - (R10 * R12)  -> remainder
 CMP   R9, #0			@ if its postive
 BGE   done				@skip
 ADD   R9, R9, R12     	@wrap around since %
 done:
 
 @can use: R10,R11,R12,halp
-
-
-
-
-
-
-
-
-ADD R0,R0,R11
-@         y_n += ( (b[j+1] * x_store[idx]) - (a[j+1] * y_store[idx]) ) / a0;
-
-
-
+@edit: can use R14 since pushed pop R14 at the start
+ADD R10,R7,#1				@[j+1]
+LDR R10,[R1,R10,LSL #2]		@b[j+1]
+LDR R11, [R4, R9, LSL #2]	@x_store[idx]
+MUL R10, R10, R11 			@b[j+1] * x_store[idx]
+ADD R14,R7,#1				@[j+1]
+LDR R14,[R2,R14,LSL #2]		@a[j+1]
+LDR R11,[R5,R9,LSL #2]      @y_store[idx]
+MUL R14,R14,R11             @a[j+1] * y_store[idx]
+SUB	R14,R10,R14				@( (b[j+1] * x_store[idx]) - (a[j+1] * y_store[idx]) )
+SDIV R14,R14,R8				@( (b[j+1] * x_store[idx]) - (a[j+1] * y_store[idx]) ) / a0;
+ADD R0,R0,R14				@y_n +=
 
 ADD R7,R7,#1
 CMP R7,R12		@for (j = 0; j < N; j++) {
 
 BLT loop_add
+@can use: R10,R11,R12,R14
+SUB R6,R6,#1@new-1
+ADD R6,R6,R12@new - 1 +N
+SDIV R6,R6,R12@ new-1+N / N
+MLS R6,R6,R6,R12
+CMP R6,#0
+BGE done2
+ADD R6,R6,R12
+done2:
+@new = (new - 1 + N) % N;
 
 
-@
-@     new = (new - 1 + N) % N;
 @     x_store[new] = x_n;
 @     y_store[new] = y_n;
 @
