@@ -17,8 +17,8 @@
 @ EE2028 Assignment 1, Sem 1, AY 2025/26
 @ (c) ECE NUS, 2025
 
-@ Write Student 1’s Name here:
-@ Write Student 2’s Name here:
+@ Write Student 1’s Name here: Vanchinathan Sindhu Yazhini
+@ Write Student 2’s Name here: Tan Zheng Boon
 
 @ You could create a look-up table of registers here:
 
@@ -26,6 +26,9 @@
 @ R1 ...
 
 @ write your program from here:
+.equ N_MAX, 10
+.lcomm x_store, 4*N_MAX
+.lcomm y_store, 4*N_MAX
 
 iir:
 
@@ -44,74 +47,66 @@ iir:
 
 SUBROUTINE:
 PUSH {R4-R11, LR}
-MOV R8,R0 	 @	int N = 4;//first parameter
-MOV R9,R1  	 @	int b[N_MAX+1] = {100, 250, 360, 450, 580}; //N+1 dimensional feedforward
-MOV R10,R2 	 @	int a[N_MAX+1] = {100, 120, 180, 230, 250}; //N+1 dimensional feedback
-MOV R11,R3 	 @	int x_n
-MOV R1,#0    @	static int x_store[N_MAX] = {0}; // to store the previous N values of x_n.
-MOV R2,#0    @	int j;
-MOV R3,#0    @	static int y_store[N_MAX] = {0}; // to store the previous values of y_n.
-@	y_n = x_n*b[0]/a[0];
-LDR R0,[R9,R2,LSL#2]
-LDR R4,[R10,R2,LSL#2]
-MUL R0, R0, R11
-SDIV R0, R0,R4
+MOV R12,R0  	@int N = 4;//first parameter
+				@R0 y_n
+				@R1 b[]
+				@R2 a[]
+				@R3 x_n
+LDR R4, =x_store@ x_store
+LDR R5, =y_store@ y_store
+MOV R6,#0		@ new
+MOV R7,#0		@j
+LDR R8,[R2,#0]  @int a0 = a[0];
+
+
+
+
+@y_n = (x_n * b[0]) / a0;
+LDR R0,[R1,#0]
+MUL R0, R3, R0
+SDIV R0, R0,R8
 
 
 loop_add:
+ADD   R9, R6, R7        @ idx = (new + j) % N;
+SDIV  R10, R9, R12      @ R10 = (new + j) / N
+MLS   R9, R10, R12, R9  @ R9 = R9 - (R10 * R12)  -> remainder
+CMP   R9, #0			@ if its postive
+BGE   done				@skip
+ADD   R9, R9, R12     	@wrap around since %
+done:
 
-@	for (j=0; j<N; j++)
-@	{
-@		y_n+=(b[j+1]*x_store[j]-a[j+1]*y_store[j])/a[0];
-@	}
-LDR R6,[R1,R2]
-ADD R2,R2,#1
-
-LDR R5,[R9,R2,LSL#2]
-
-
-LDR R8,[R10]
-SDIV R4,R4,R8
-ADD R0,R4,R4
+@can use: R10,R11,R12,halp
 
 
 
 
-ADD R2,#1
-CMP R2,R8
+
+
+
+
+ADD R0,R0,R11
+@         y_n += ( (b[j+1] * x_store[idx]) - (a[j+1] * y_store[idx]) ) / a0;
+
+
+
+
+ADD R7,R7,#1
+CMP R7,R12		@for (j = 0; j < N; j++) {
 
 BLT loop_add
 
-MOV R2,R8@	for (j=N-1; j>0; j--)
-SUB R2,R2,#1
-
-
-loop_minus:
-SUB R2,R2,#1
-CMP R2,#0
-
-
-
-
-
-
-
-BGT loop_minus
-
 
 @
-@	for (j=N-1; j>0; j--)
-@	{
-@		x_store[j] = x_store[j-1];
-@		y_store[j] = y_store[j-1];
-@	}
-
-@	x_store[0] = x_n;
-@	y_store[0] = y_n;
+@     new = (new - 1 + N) % N;
+@     x_store[new] = x_n;
+@     y_store[new] = y_n;
 @
-@	y_n /= 100; // scaling down
+@     return y_n / 100;
+@ }
 
-@	return y_n;
+
+
 
 
 
