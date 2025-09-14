@@ -58,11 +58,17 @@ MUL R0, R0, R11
 SDIV R0, R0,R4
 
 
+loop_add:
+ADD R2,#1
+CMP R2,R8
 
+
+
+BLT loop_add
 
 @	for (j=0; j<N; j++)
 @	{
-@		y_n+=(b[j+1]*x_store[j]-a[j+1]*y_store[j])/a[0];//pain
+@		y_n+=(b[j+1]*x_store[j]-a[j+1]*y_store[j])/a[0];
 @	}
 @
 @	for (j=N-1; j>0; j--)
