@@ -48,15 +48,47 @@ int main(void)
 	// think of the values below as numbers of the form y.yy (floating point with 2 digits precision)
 	// which are scaled up to allow them to be used integers
 	// within the iir function, we divide y by 100 (decimal) to scale it down
+	//do note that these numbers are in hundred, as it is difficult to do division for floats in assembly, need to remember to scale down everything by 100 as this is scaled up
+
 	int b[N_MAX+1] = {100, 250, 360, 450, 580}; //N+1 dimensional feedforward
 	int a[N_MAX+1] = {100, 120, 180, 230, 250}; //N+1 dimensional feedback
-	//do note that these numbers are in hundred, as it is difficult to do division for floats in assembly, need to remember to scale down everything by 100 as this is scaled up
 	int x[X_SIZE] = {100, 230, 280, 410, 540, 600, 480, 390, 250, 160, 100, 340};
+
+/*
+	int b[N_MAX+1] = {100, 250, 360, 450, 580};
+
+	int a[N_MAX+1] = {100, 120, 180, 230, 250};
+
+	int x[X_SIZE] = {100};
+*/
+/*
+
+	int b[N_MAX+1] = {100, 90, 80, 70, 60, 50, 40, 30, 20, 10};
+
+	int a[N_MAX+1] = {100, 95, 85, 75, 65, 55, 45, 35, 25, 15};
+
+	int x[X_SIZE] = {50, 100, 150, 200, 250, 300, -300, -200, -100, 0, 100, 200};
+*/
+/*
+	int b[N_MAX+1] = {100, 250, 360, 450, 580};
+
+	int a[N_MAX+1] = {100, 120, 180, 230, 250};
+
+	int x[X_SIZE] = {100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100};
+*/
+/*
+	int b[N_MAX+1] = {100, 250, 360, 450, 580};
+
+	int a[N_MAX+1] = {100, 120, 180, 230, 250};
+
+	int x[X_SIZE] = {100, -100, 200, -200, 300, -300, 400, -400, 0, 0, 100, -100};
+	*/
 //3 lines above are interger arrays, a b and x
 	// Call assembly language function iir for each element of x
 	for (i=0; i<X_SIZE; i++)//max size of a and b is defined above, assume the constants are the same for assembly
 
 	{
+
 		printf( "asm: i = %d, y_n = %d, \n", i, iir(N, b, a, x[i]) ) ;
 		printf( "C  : i = %d, y_n = %d, \n", i, iir_c(N, b, a, x[i]) ) ;
 	}

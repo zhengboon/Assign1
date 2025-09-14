@@ -27,13 +27,13 @@ Idx Name          Size      VMA       LMA       File off  Algn
                   ALLOC
  11 .ARM.attributes 00000030  00000000  00000000  000061d0  2**0
                   CONTENTS, READONLY
- 12 .debug_line   00000c5f  00000000  00000000  00006200  2**0
+ 12 .debug_line   00000c61  00000000  00000000  00006200  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 13 .debug_line_str 00000067  00000000  00000000  00006e5f  2**0
+ 13 .debug_line_str 00000067  00000000  00000000  00006e61  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 14 .debug_info   00000391  00000000  00000000  00006ec6  2**0
+ 14 .debug_info   00000391  00000000  00000000  00006ec8  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 15 .debug_abbrev 0000020b  00000000  00000000  00007257  2**0
+ 15 .debug_abbrev 0000020b  00000000  00000000  00007259  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
  16 .debug_aranges 00000090  00000000  00000000  00007468  2**3
                   CONTENTS, READONLY, DEBUGGING, OCTETS
@@ -192,13 +192,13 @@ ADD R6,R6,R12@new - 1 +N
  800027a:	4466      	add	r6, ip
 SDIV R10,R6,R12@ new-1+N / N
  800027c:	fb96 fafc 	sdiv	sl, r6, ip
-MLS R6,R10,R12,R6
+MLS R6,R10,R12,R6@find remainder
  8000280:	fb0a 661c 	mls	r6, sl, ip, r6
-CMP R6,#0
+CMP R6,#0@check if negative
  8000284:	2e00      	cmp	r6, #0
-BGE done2
+BGE done2@ if not negative
  8000286:	da00      	bge.n	800028a <done2>
-ADD R6,R6,R12
+ADD R6,R6,R12@ if negative
  8000288:	4466      	add	r6, ip
 
 0800028a <done2>:
@@ -209,9 +209,9 @@ STR R3, [R4, R6, LSL #2]   @ x_store[new] = x_n
  800028a:	f844 3026 	str.w	r3, [r4, r6, lsl #2]
 STR R0, [R5, R6, LSL #2]   @ y_store[new] = y_n
  800028e:	f845 0026 	str.w	r0, [r5, r6, lsl #2]
-STR R6,[R11]
+STR R6,[R11]			   @ store for next run
  8000292:	f8cb 6000 	str.w	r6, [fp]
-MOV R10,#100
+MOV R10,#100			   @ make into float
  8000296:	f04f 0a64 	mov.w	sl, #100	@ 0x64
 SDIV R0,R0,R10			   @ return y_n / 100;
  800029a:	fb90 f0fa 	sdiv	r0, r0, sl
@@ -1107,11 +1107,11 @@ int main(void)
 	int N = 4;//first parameter
  8000c92:	2304      	movs	r3, #4
  8000c94:	f8c7 3088 	str.w	r3, [r7, #136]	@ 0x88
-
-	//  NOTE: DO NOT modify the code below this line
 	// think of the values below as numbers of the form y.yy (floating point with 2 digits precision)
 	// which are scaled up to allow them to be used integers
 	// within the iir function, we divide y by 100 (decimal) to scale it down
+	//do note that these numbers are in hundred, as it is difficult to do division for floats in assembly, need to remember to scale down everything by 100 as this is scaled up
+
 	int b[N_MAX+1] = {100, 250, 360, 450, 580}; //N+1 dimensional feedforward
  8000c98:	f107 035c 	add.w	r3, r7, #92	@ 0x5c
  8000c9c:	222c      	movs	r2, #44	@ 0x2c
@@ -1144,7 +1144,6 @@ int main(void)
  8000cdc:	63fb      	str	r3, [r7, #60]	@ 0x3c
  8000cde:	23fa      	movs	r3, #250	@ 0xfa
  8000ce0:	643b      	str	r3, [r7, #64]	@ 0x40
-	//do note that these numbers are in hundred, as it is difficult to do division for floats in assembly, need to remember to scale down everything by 100 as this is scaled up
 	int x[X_SIZE] = {100, 230, 280, 410, 540, 600, 480, 390, 250, 160, 100, 340};
  8000ce2:	4b23      	ldr	r3, [pc, #140]	@ (8000d70 <main+0xe8>)
  8000ce4:	463c      	mov	r4, r7
@@ -1155,6 +1154,9 @@ int main(void)
  8000cee:	c40f      	stmia	r4!, {r0, r1, r2, r3}
  8000cf0:	e895 000f 	ldmia.w	r5, {r0, r1, r2, r3}
  8000cf4:	e884 000f 	stmia.w	r4, {r0, r1, r2, r3}
+
+	int x[X_SIZE] = {100, -100, 200, -200, 300, -300, 400, -400, 0, 0, 100, -100};
+	*/
 //3 lines above are interger arrays, a b and x
 	// Call assembly language function iir for each element of x
 	for (i=0; i<X_SIZE; i++)//max size of a and b is defined above, assume the constants are the same for assembly
@@ -1163,6 +1165,7 @@ int main(void)
  8000cfe:	e030      	b.n	8000d62 <main+0xda>
 
 	{
+
 		printf( "asm: i = %d, y_n = %d, \n", i, iir(N, b, a, x[i]) ) ;
  8000d00:	f8d7 308c 	ldr.w	r3, [r7, #140]	@ 0x8c
  8000d04:	009b      	lsls	r3, r3, #2
