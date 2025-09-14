@@ -29,6 +29,7 @@
 .equ N_MAX, 10
 .lcomm x_store, 4*N_MAX
 .lcomm y_store, 4*N_MAX
+.lcomm new,    4
 
 iir:
 
@@ -54,7 +55,8 @@ MOV R12,R0  	@int N = 4;//first parameter
 				@R3 x_n
 LDR R4, =x_store@ x_store
 LDR R5, =y_store@ y_store
-MOV R6,#0		@ new
+LDR R11, =new
+LDR R6,[R11]	@ new
 MOV R7,#0		@j
 LDR R8,[R2,#0]  @int a0 = a[0];
 
@@ -80,15 +82,15 @@ done:
 @edit: can use R14 since pushed pop R14 at the start
 ADD R10,R7,#1				@[j+1]
 LDR R10,[R1,R10,LSL #2]		@b[j+1]
-LDR R11, [R4, R9, LSL #2]	@x_store[idx]
-MUL R10, R10, R11 			@b[j+1] * x_store[idx]
+LDR R14, [R4, R9, LSL #2]	@x_store[idx]
+MUL R10, R10, R14 			@b[j+1] * x_store[idx]
 ADD R14,R7,#1				@[j+1]
 LDR R14,[R2,R14,LSL #2]		@a[j+1]
-LDR R11,[R5,R9,LSL #2]      @y_store[idx]
-MUL R14,R14,R11             @a[j+1] * y_store[idx]
-SUB	R14,R10,R14				@( (b[j+1] * x_store[idx]) - (a[j+1] * y_store[idx]) )
-SDIV R14,R14,R8				@( (b[j+1] * x_store[idx]) - (a[j+1] * y_store[idx]) ) / a0;
-ADD R0,R0,R14				@y_n +=
+LDR R9,[R5,R9,LSL #2]      @y_store[idx]
+MUL R14,R14,R9             @a[j+1] * y_store[idx]
+SUB	R10,R10,R14				@( (b[j+1] * x_store[idx]) - (a[j+1] * y_store[idx]) )
+SDIV R10,R10,R8				@( (b[j+1] * x_store[idx]) - (a[j+1] * y_store[idx]) ) / a0;
+ADD R0,R0,R10				@y_n +=
 
 ADD R7,R7,#1
 CMP R7,R12		@for (j = 0; j < N; j++) {
@@ -107,6 +109,7 @@ done2:
 
 STR R3, [R4, R6, LSL #2]   @ x_store[new] = x_n
 STR R0, [R5, R6, LSL #2]   @ y_store[new] = y_n
+STR R6,[R11]
 MOV R10,#100
 SDIV R0,R0,R10			   @ return y_n / 100;
 
